@@ -1,28 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Button, Keyboard } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Button, Keyboard, EmitterSubscription } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AntDesign, FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-
+import { StationList } from './irctc-dev.trainstations';
+import { GetStationListService } from './trainservice';
+import { DateTime } from 'luxon';
 interface Station {
-  label: string;
-  value: string;
+  stationName: string;
+  stationCode: string;
 }
-
-const recentSearches: Station[] = [
-  { label: 'Gurgaon - All Stations, Haryana', value: 'GGN' },
-  { label: 'Jodhpur - All Stations, Rajasthan', value: 'JU' },
-  { label: 'Delhi - All Stations, Delhi', value: 'DL' },
-  { label: 'GGN - Gurgaon, Haryana', value: 'GGN' },
-  { label: 'JU - Jodhpur Junction, Rajasthan', value: 'JU' }
-];
-
-const popularSearches: Station[] = [
-  { label: 'NDLS - New Delhi, Delhi', value: 'NDLS' },
-  { label: 'HWH - Kolkata Howrah Junction, West Bengal', value: 'HWH' },
-  { label: 'MMCT - Mumbai Central, Maharashtra', value: 'MMCT' }
-];
 
 const TrainSearchScreen: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -31,14 +19,27 @@ const TrainSearchScreen: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [stationField, setStationField] = useState<'from' | 'to' | null>(null);
+  const [filteredStations, setFilteredStations] = useState<Station[]>([]);
+
+  useEffect(() => {
+    if (search.trim() === '') {
+      setFilteredStations([]); // Clear suggestions when search is empty
+    } else {
+      GetStationList()
+    }
+  }, [search]);
+
+  const GetStationList = async () => {
+    try {
+      const response = await GetStationListService(search)
+      setFilteredStations(response);
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const handleSearchChange = (text: string) => {
     setSearch(text);
-    if (stationField === 'from') {
-      setFromStation(text);
-    } else if (stationField === 'to') {
-      setToStation(text);
-    }
   };
 
   const selectStation = (station: string) => {
@@ -56,7 +57,7 @@ const TrainSearchScreen: React.FC = () => {
     setDate(currentDate);
   };
 
-  const changeDate = (daysToAdd:number) => {
+  const changeDate = (daysToAdd: number) => {
     const newDate = new Date();
     newDate.setDate(newDate.getDate() + daysToAdd);
     setDate(newDate);
@@ -69,13 +70,13 @@ const TrainSearchScreen: React.FC = () => {
 
   const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
 
-  const HandleSearchTrain = () =>{
+  const HandleSearchTrain = () => {
     router.push({
       pathname: "/trainlist",
       params: {
-        fromStation: "Gurgaon - All Stations",
-        toStation: "Jodhpur - All Stations",
-        date: "2024-11-23",
+        fromStation: ((fromStation).split('-')[1]).trim(),
+        toStation: ((toStation).split('-')[1]).trim(),
+        date: DateTime.fromFormat(formattedDate, 'dd-MM-yyyy').toFormat('yyyyMMdd'),
       },
     });
   }
@@ -84,61 +85,17 @@ const TrainSearchScreen: React.FC = () => {
     <ScrollView style={styles.container}>
       {stationField ? (
         <>
-          <SearchBar
-            placeholder={`Search ${stationField === 'from' ? 'From' : 'To'} Station`}
-            onChangeText={handleSearchChange as unknown as ((text: string) => void) & (() => any)}
-            lightTheme={true}
-            round={true}
-            value={stationField === 'from' ? fromStation : toStation}
-            platform="android"
-            showLoading={false}
-            onClear={() => setSearch('')}
-            onFocus={() => console.log('Focused')}
-            onBlur={() => console.log('Blurred')}
-            onCancel={() => setSearch('')}
-            loadingProps={{}}
-            clearIcon={{ name: 'clear', type: 'material', color: 'black' }}
-            searchIcon={{ name: 'search', type: 'material', color: 'black' }}
-            cancelButtonTitle="Cancel"
-            cancelButtonProps={{ buttonTextStyle: { color: 'blue' }, buttonStyle: { padding: 5 } }}
-            showCancel={true}
-          />
-          {/* Recent Searches */}
-          <View>
-            <Text style={styles.sectionHeader}>Recent Searches</Text>
-            {recentSearches.map((station, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.stationItem}
+          <ScrollView style={styles.container}>
+            <TextInput
+              style={styles.searchInput}
+              onChangeText={handleSearchChange}
+              value={search}
+              placeholder="Search stations..."
+            />
+            {filteredStations.map((station, index) => (
+              <TouchableOpacity key={index} style={styles.stationItem}
                 onPress={() => {
-                  selectStation(station.label);
-                  Keyboard.dismiss();
-                }}
-              >
-                <Ionicons
-                  name="search-outline"
-                  size={15}
-                  color="green"
-                  style={styles.suggestionIcon}
-                />
-                <View style={styles.stationTextContainer}>
-                  <Text style={styles.stationText}>{station.label}</Text>
-                  <Text style={styles.stationSubText}>{station.value}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Popular Searches */}
-          <View>
-            <Text style={styles.sectionHeader}>Popular Search</Text>
-            {popularSearches.map((station, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.stationItem}
-                onPress={() => {
-                  selectStation(station.label);
-                  Keyboard.dismiss();
+                  selectStation(`${station.stationName} - ${station.stationCode}`);
                 }}
               >
                 <Ionicons
@@ -148,12 +105,15 @@ const TrainSearchScreen: React.FC = () => {
                   style={styles.suggestionIcon}
                 />
                 <View style={styles.stationTextContainer}>
-                  <Text style={styles.stationText}>{station.label}</Text>
-                  <Text style={styles.stationSubText}>{station.value}</Text>
+                  <Text style={styles.stationText}>{station.stationName}</Text>
+                  <Text style={styles.stationSubText}>{station.stationCode}</Text>
                 </View>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
+
+          {/* Popular Searches */}
+
         </>
       ) : (
         <>
@@ -244,8 +204,8 @@ const TrainSearchScreen: React.FC = () => {
 
           {/* Search Button */}
           <TouchableOpacity
-          onPress={HandleSearchTrain}
-          style={styles.searchButton}>
+            onPress={HandleSearchTrain}
+            style={styles.searchButton}>
             <Text style={styles.searchButtonText}>SEARCH TRAINS</Text>
           </TouchableOpacity>
 
@@ -260,6 +220,21 @@ const TrainSearchScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  searchInput: {
+    margin: 5,
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 25, // Rounded corners
+    paddingLeft: 20, // Padding inside the input box
+    fontSize: 16,
+    backgroundColor: '#fff', // White background for the input
+    shadowColor: '#000', // Shadow for 3D effect
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    elevation: 2,
+  },
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",

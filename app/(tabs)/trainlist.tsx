@@ -8,155 +8,12 @@ import {
     ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
+import { GetTrainListService } from "./trainservice";
+import { TrainBetweenStationsList } from "./types/trainBtwnStnsList";
+import { bootstrapColors } from "../styles/color-code";
 
-const trains = [
-    {
-        id: "1",
-        name: "15014 - Ranikhet Exp",
-        departure: "05:23 GGN",
-        duration: "11h 12m",
-        arrival: "16:35 JU",
-        ratings: 3.9,
-        schedule: "Schedule",
-        classes: [
-            { name: "SL", price: "₹365", status: "Not Available" },
-            { name: "2S Tatkal", price: "Not Available", status: "Not Available" },
-            { name: "3A Tatkal", price: "Not Available", status: "Not Available" },
-            { name: "3C Tatkal", price: "Not Available", status: "Not Available" },
-            { name: "SL Tatkal", price: "Not Available", status: "Not Available" },
-            { name: "SL Tatkal", price: "Not Available", status: "Not Available" },
-            { name: "3A", price: "WL 20", status: "60% Chance" },
-        ],
-        quotas: {
-            General: [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-            Tatkal: [
-                { date: "24 Nov", status: "WL 22", chance: "51% Chance", price: "₹400" },
-                { date: "25 Nov", status: "WL 18", chance: "63% Chance", price: "₹400" },
-            ],
-            "Senior Citizen": [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-        },
-    },
-    {
-        id: "2",
-        name: "25014 - Corbet Prk Link",
-        departure: "05:23 GGN",
-        duration: "11h 12m",
-        arrival: "16:35 JU",
-        ratings: 4.1,
-        schedule: "Schedule",
-        classes: [
-            { name: "SL", price: "Not Available", status: "Not Available" },
-            { name: "3A", price: "WL 42", status: "61% Chance" },
-            { name: "Tatkal", price: "₹990", status: "Not Available" },
-        ],
-        quotas: {
-            General: [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-            Tatkal: [
-                { date: "24 Nov", status: "WL 22", chance: "51% Chance", price: "₹400" },
-                { date: "25 Nov", status: "WL 18", chance: "63% Chance", price: "₹400" },
-            ],
-            "Senior Citizen": [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-        },
-    },
-    {
-        id: "3",
-        name: "22421 - Dee Ju Sf Exp",
-        departure: "07:40 GGN",
-        duration: "10h 10m",
-        arrival: "17:50 JU",
-        ratings: 3.8,
-        schedule: "Schedule",
-        classes: [
-            { name: "SL", price: "₹370", status: "Not Available" },
-            { name: "3A", price: "WL 52", status: "75% Chance" },
-        ],
-        quotas: {
-            General: [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-            Tatkal: [
-                { date: "24 Nov", status: "WL 22", chance: "51% Chance", price: "₹400" },
-                { date: "25 Nov", status: "WL 18", chance: "63% Chance", price: "₹400" },
-            ],
-            "Senior Citizen": [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-        },
-    },
-    {
-        id: "3",
-        name: "22421 - Dee Ju Sf Exp",
-        departure: "07:40 GGN",
-        duration: "10h 10m",
-        arrival: "17:50 JU",
-        ratings: 3.8,
-        schedule: "Schedule",
-        classes: [
-            { name: "SL", price: "₹370", status: "Not Available" },
-            { name: "3A", price: "WL 52", status: "75% Chance" },
-        ],
-        quotas: {
-            General: [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-            Tatkal: [
-                { date: "24 Nov", status: "WL 22", chance: "51% Chance", price: "₹400" },
-                { date: "25 Nov", status: "WL 18", chance: "63% Chance", price: "₹400" },
-            ],
-            "Senior Citizen": [
-                { date: "24 Nov", status: "WL 54", chance: "44% Chance", price: "₹365" },
-                { date: "25 Nov", status: "WL 39", chance: "56% Chance", price: "₹365" },
-                { date: "26 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "27 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "28 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-                { date: "29 Nov", status: "WL 40", chance: "60% Chance", price: "₹365" },
-            ],
-        },
-    },
-];
 
 const quotas = ["General", "Tatkal", "Senior Citizen", "Ladies"];
 
@@ -170,10 +27,33 @@ const dates = [
 ];
 
 const TrainListScreen = () => {
+    const [trainBtwnStnsList, setTrainBtwnStnsList] = useState<TrainBetweenStationsList[]>()
     const [selectedClass, setSelectedClass] = useState<string | null>(null);
     const [selectedTrainId, setSelectedTrainId] = useState<string | null>(null);
     const [selectedQuota, setSelectedQuota] = useState<string>("General");
     const [selectedDate, setSelectedDate] = useState<string>("23");
+    const [quotaList, setQuotaList] = useState<string[]>([]);
+    const params = useLocalSearchParams();
+    const { fromStation, toStation, date } = params;
+
+    React.useEffect(() => {
+        if (fromStation && toStation && date) {
+
+            GetTrainList()
+        }
+    }, [fromStation, toStation, date ])
+
+    const GetTrainList = async () => {
+        try {
+            const response = await GetTrainListService(fromStation, toStation, date)
+            if (response) {
+                setTrainBtwnStnsList(response.trainBtwnStnsList)
+                setQuotaList(response.quotaList)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
     const handleClassClick = (trainId: string, className: string) => {
         if (selectedTrainId === trainId && selectedClass === className) {
             setSelectedTrainId(null); // Toggle off if already selected
@@ -186,49 +66,53 @@ const TrainListScreen = () => {
 
     const handleDatePress = (date: string) => {
         setSelectedDate(date);
-        console.log(`Selected date: ${date}`); // You can update data based on date
     };
-    const renderTrain = ({ item }: any) => (
+    const renderTrain = ({ item }: { item: TrainBetweenStationsList }) => (
         <View style={styles.trainCard}>
             {/* Train Header */}
             <View style={styles.trainHeader}>
-                <Text style={styles.trainName}>{item.name}</Text>
+                <Text style={styles.trainName}>{item.trainName} ({item.trainNumber})</Text>
                 <Text style={styles.rating}>
-                    <Ionicons name="star" size={14} color="green" /> {item.ratings}
+                    <Ionicons name="star" size={14} color="green" /> {'A'}
                 </Text>
             </View>
 
             {/* Train Timing */}
             <View style={styles.trainTiming}>
-                <Text style={styles.departure}>{item.departure}</Text>
+                <Text style={styles.departure}>{item.departureTime}</Text>
                 <Text style={styles.duration}>{item.duration}</Text>
-                <Text style={styles.arrival}>{item.arrival}</Text>
+                <Text style={styles.arrival}>{item.arrivalTime}</Text>
+            </View>
+            <View style={styles.trainTiming}>
+                <Text style={styles.fromStnCode}>{item.fromStnCode}</Text>
+                <Text style={styles.duration}>{'-'}</Text>
+                <Text style={styles.toStnCode}>{item.toStnCode}</Text>
             </View>
 
             {/* Train Classes */}
             <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
                 <View style={styles.trainClasses}>
-                    {item.classes.map((cls: any, index: number) => (
+                    {item.avlClasses.map((cls: any, index: number) => (
                         <TouchableOpacity
                             key={index}
                             style={[
                                 styles.classCard,
-                                selectedTrainId === item.id && selectedClass === cls.name
+                                selectedTrainId === item.trainNumber && selectedClass === cls
                                     ? styles.classCardSelected
                                     : null,
                             ]}
-                            onPress={() => handleClassClick(item.id, cls.name)}
+                            onPress={() => handleClassClick(item.trainNumber, cls.name)}
                         >
-                            <Text style={styles.className}>{cls.name}</Text>
-                            <Text style={styles.classPrice}>{cls.price}</Text>
-                            <Text style={styles.classStatus}>{cls.status}</Text>
+                            <Text style={styles.className}>{cls}</Text>
+                            <Text style={styles.classPrice}>{'₹ 200'}</Text>
+                            <Text style={styles.classStatus}>{'AV'}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
             </ScrollView>
 
             {/* Availability Details */}
-            {selectedTrainId === item.id && (
+            {selectedTrainId === item.trainNumber && (
                 <View style={styles.availability}>
                     {/* Quota Tabs */}
                     <View style={styles.quotaTabs}>
@@ -254,7 +138,7 @@ const TrainListScreen = () => {
                     </View>
 
                     {/* Quota Details */}
-                    {item.quotas[selectedQuota]?.map((avl: any, index: number) => (
+                    {/* {quotaList[selectedQuota]?.map((avl: any, index: number) => (
                         <View key={index} style={styles.availabilityRow}>
                             <Text style={styles.availabilityDate}>{avl.date}</Text>
                             <Text style={styles.availabilityStatus}>
@@ -264,7 +148,7 @@ const TrainListScreen = () => {
                                 <Text style={styles.bookButtonText}>Book {avl.price}</Text>
                             </TouchableOpacity>
                         </View>
-                    ))}
+                    ))} */}
                 </View>
             )}
         </View>
@@ -317,8 +201,8 @@ const TrainListScreen = () => {
                 ))}
             </ScrollView>
             <FlatList
-                data={trains}
-                keyExtractor={(item) => item.id}
+                data={trainBtwnStnsList}
+                keyExtractor={(item) => item.trainNumber}
                 renderItem={renderTrain}
                 contentContainerStyle={styles.listContent}
             />
@@ -378,6 +262,12 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: "bold",
         color: "#333",
+    },
+    toStnCode : {
+        color : bootstrapColors.danger
+    },
+    fromStnCode : {
+        color : bootstrapColors.primary
     },
     trainClasses: {
         flexDirection: "row",
@@ -495,10 +385,10 @@ const styles = StyleSheet.create({
     dateNumberSelected: {
         color: "green",
     },
-    dateAndDay : {
-       display : 'flex',
-       flexDirection : 'row',
-       gap : 2
+    dateAndDay: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 2
     },
     dateStatus: {
         fontSize: 12,
